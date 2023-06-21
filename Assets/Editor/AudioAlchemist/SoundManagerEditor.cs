@@ -4,6 +4,7 @@ using UnityEditor;
 [CustomEditor(typeof(AudioAlchemist))]
 public class SoundManagerEditor : Editor
 {
+    SerializedProperty destroyOnLoadProperty;
     SerializedProperty soundSubjectsProperty;
     Texture2D headerImage;
     Color arrayColor; // Color for the array background
@@ -12,6 +13,7 @@ public class SoundManagerEditor : Editor
 
     void OnEnable()
     {
+        destroyOnLoadProperty = serializedObject.FindProperty("destroyOnLoad");
         soundSubjectsProperty = serializedObject.FindProperty("soundSubjects");
         headerImage = EditorGUIUtility.Load("Assets/Editor/Audioalchemist/headerImage.png") as Texture2D;
         arrayColor = new Color(0.9f, 0.9f, 0.9f); // Set the array background color
@@ -34,6 +36,8 @@ public class SoundManagerEditor : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Sound Subjects", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(destroyOnLoadProperty);
+
 
         EditorGUI.indentLevel++;
 

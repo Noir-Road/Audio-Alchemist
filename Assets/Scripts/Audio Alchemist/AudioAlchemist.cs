@@ -12,10 +12,23 @@ using System.Collections.Generic;
 public class AudioAlchemist : MonoBehaviour
 {
     public static AudioAlchemist Instance;
+
     public SoundSubject[] soundSubjects;
+
     Dictionary<string, SoundSubject> soundSubjectDictionary;
+
+    [Tooltip("Toogle 'True' if you would like to not carry the current Audio Alchemist to the next scene")]
+    public bool destroyOnLoad;
+
     void Awake()
     {
+        CreateInstance();
+        FetchSounds();
+    }
+
+    void CreateInstance()
+    {
+        if (destroyOnLoad) return;
         if (Instance == null) Instance = this;
         else
         {
@@ -24,7 +37,10 @@ public class AudioAlchemist : MonoBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
+    }
 
+    void FetchSounds()
+    {
         soundSubjectDictionary = new Dictionary<string, SoundSubject>();
         foreach (var soundSubject in soundSubjects)
         {
