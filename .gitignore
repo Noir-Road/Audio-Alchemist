@@ -1,6 +1,0 @@
-# Exclude All
-/*
-
-# Except this path
-!Assets/_Scripts/
-!Assets/Editor/
