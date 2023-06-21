@@ -1,6 +1,6 @@
-#Exclude All
+# Exclude All
 /*
 
-# Audio Alchemist Scripts
-!/Assets/_Scripts
-!/Assets/Editor
+# Except this path
+!Assets/_Scripts/
+!Assets/Editor/
