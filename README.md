@@ -4,7 +4,7 @@
 
 The Audio Alchemist tool is a versatile and flexible solution for managing sounds in Unity projects. It simplifies the process of controlling sound effects from multiple scripts and provides options for fading effects and volume control.
 
-<img src="/Assets/Editor/Docs/Audio%20Alchemist%20Overview.png" alt="Overview">
+<img src="/Assets/Editor/Docs/Audio%20alchemist%20Overview.png" alt="Overview">
 
 ## Features
 
