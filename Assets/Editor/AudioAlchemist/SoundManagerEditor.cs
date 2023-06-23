@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 [CustomEditor(typeof(AudioAlchemist))]
 public class SoundManagerEditor : Editor
@@ -7,6 +8,8 @@ public class SoundManagerEditor : Editor
     SerializedProperty destroyOnLoadProperty;
     SerializedProperty soundSubjectsProperty;
     Texture2D headerImage;
+    Texture2D addImage;
+    Texture2D removeImage;
     Color arrayColor; // Color for the array background
     Color[] randomColors; // Array to store the fixed random colors for each array element
     float spacing = 10f; // Spacing between array elements
@@ -16,6 +19,8 @@ public class SoundManagerEditor : Editor
         destroyOnLoadProperty = serializedObject.FindProperty("destroyOnLoad");
         soundSubjectsProperty = serializedObject.FindProperty("soundSubjects");
         headerImage = EditorGUIUtility.Load("Assets/Editor/Audioalchemist/headerImage.png") as Texture2D;
+        addImage = EditorGUIUtility.Load("Assets/Editor/Icons/add.png") as Texture2D;
+        removeImage = EditorGUIUtility.Load("Assets/Editor/Icons/cancel.png") as Texture2D;
         arrayColor = new Color(0.9f, 0.9f, 0.9f); // Set the array background color
 
         // Generate fixed random colors for each array element
@@ -35,9 +40,7 @@ public class SoundManagerEditor : Editor
         GUI.DrawTexture(headerRect, headerImage, ScaleMode.ScaleToFit);
 
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Sound Subjects", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(destroyOnLoadProperty);
-
 
         EditorGUI.indentLevel++;
 
@@ -55,14 +58,32 @@ public class SoundManagerEditor : Editor
 
             // Add spacing between array elements
             GUILayout.Space(spacing);
+
+            // Add a remove button for each sound subject
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(removeImage, GUILayout.Height(35), GUILayout.Width(35)))
+            {
+                soundSubjectsProperty.DeleteArrayElementAtIndex(i);
+                randomColors = randomColors.Where((_, index) => index != i).ToArray();
+            }
+            GUILayout.EndHorizontal();
         }
 
         EditorGUI.indentLevel--;
 
         EditorGUILayout.Space();
 
-        // Add a button to add new sound subjects
-        if (GUILayout.Button("Add Sound Subject"))
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        GUIStyle centeredLabelStyle = new GUIStyle(EditorStyles.centeredGreyMiniLabel);
+        GUILayout.Label("Add Sounds Group", centeredLabelStyle);
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button(addImage, GUILayout.Height(40), GUILayout.Width(40)))
         {
             soundSubjectsProperty.arraySize++;
 
@@ -81,6 +102,8 @@ public class SoundManagerEditor : Editor
             }
             randomColors = newRandomColors; // Assign the new colors to the randomColors array
         }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
 
         serializedObject.ApplyModifiedProperties();
     }

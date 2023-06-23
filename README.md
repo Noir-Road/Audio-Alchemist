@@ -4,7 +4,7 @@
 
 The Audio Alchemist tool is a versatile and flexible solution for managing sounds in Unity projects. It simplifies the process of controlling sound effects from multiple scripts and provides options for fading effects and volume control.
 
-<img src="/Assets/Docs/Audio%20Alchemist%20Overview.png" alt="Overview">
+<img src="/Assets/Editor/Docs/Audio%20Alchemist%20Overview.png" alt="Overview">
 
 ## Features
 
@@ -22,7 +22,7 @@ Customize sound properties:
 
 To trigger a sound, use the following code:
 
-<img src="/Assets/Docs/Skin%20Unlock%20Sound.png" alt="Overview sound">
+<img src="/Assets/Editor/Docs/Skin%20Unlock%20Sound.png" alt="Overview sound">
 
 <p>To play a sound</p>
 
@@ -43,9 +43,9 @@ Example:
 <ul>
   <li>In the Inspector, provide the name of the sound group you want to control in the "Group Name" field.</li>
   <li>Create a slider using the Canvas component</li>
-  <img src="/Assets/Docs/GUI%20Slider.png" alt="GUI Slider Component">
+  <img src="/Assets/Editor/Docs/GUI%20Slider.png" alt="GUI Slider Component">
   <li>Reference a slider from any script, drag and drop the script on "On Value Changed" where the following function is at.</li>
-  <img src="/Assets/Docs/GUI%20Sliders%20Controller.png" alt="GUI Slider On Value Change">
+  <img src="/Assets/Editor/Docs/GUI%20Sliders%20Controller.png" alt="GUI Slider On Value Change">
   <li>When the slider value changes, the "OnVolumeSliderChanged" method will be invoked, which in turn calls the "UpdateSubjectVolume" method of the "AudioAlchemist" instance, passing the sound group name and the new volume value.</li>
 </ul>
 
