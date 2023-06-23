@@ -24,13 +24,13 @@ To trigger a sound, use the following code:
 
 <img src="/Assets/Editor/Docs/Skin%20Unlock%20Sound.png" alt="Overview sound">
 
-<p>To play a sound</p>
+<h3>To play a sound</h3>
 
 ```csharp
 AudioAlchemist.Instance.PlaySound("Skin Unlocked");
 ```
 
-<p>To stop a sound</p>
+<h3>To stop a sound</h3>
 
 ```csharp
 AudioAlchemist.Instance.StopSound("Skin Unlocked");
