@@ -8,45 +8,40 @@ public class AudioAlchemistEditor : Editor
     SerializedProperty destroyOnLoadProperty;
     SerializedProperty soundSubjectsProperty;
     bool[] foldouts;
-    bool[][] soundFoldouts; // Array de arrays para controlar el colapsado de cada sonido en cada grupo
+    bool[][] soundFoldouts;
     AudioSource previewAudioSource;
-    string searchQuery = ""; // Campo de búsqueda
-    float globalVolume = 1f; // Volumen global
-    float[] groupVolumes; // Volumen por grupo
-    string currentClipName = ""; // Nombre del clip actual en reproducción
-    string currentGroupName = ""; // Nombre del grupo actual
-    Texture2D headerImage; // Imagen del header
+    string searchQuery = ""; 
+    float globalVolume = 1f; 
+    float[] groupVolumes; 
+    string currentClipName = ""; 
+    string currentGroupName = "";
+    Texture2D headerImage;
 
     void OnEnable()
     {
         destroyOnLoadProperty = serializedObject.FindProperty("destroyOnLoad");
         soundSubjectsProperty = serializedObject.FindProperty("soundSubjects");
         foldouts = new bool[soundSubjectsProperty.arraySize];
-        soundFoldouts = new bool[soundSubjectsProperty.arraySize][]; // Inicializar arreglo para el control de colapsado de sonidos
+        soundFoldouts = new bool[soundSubjectsProperty.arraySize][];
         groupVolumes = new float[soundSubjectsProperty.arraySize];
 
-        // Inicializar el volumen de cada grupo a 0.5 (volumen medio)
         for (int i = 0; i < groupVolumes.Length; i++)
         {
             groupVolumes[i] = 0.5f;
         }
 
-        // Cargar la imagen del header
         headerImage = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/AudioAlchemist/sprites/header.png");
 
-        // Crear el AudioSource de preview si no existe
         if (previewAudioSource == null)
         {
             previewAudioSource = EditorUtility.CreateGameObjectWithHideFlags("AudioSource", HideFlags.HideAndDontSave, typeof(AudioSource)).GetComponent<AudioSource>();
         }
 
-        // Registrar evento para detener reproducción si el usuario cambia de GameObject
         Selection.selectionChanged += OnSelectionChanged;
     }
 
     void OnDisable()
     {
-        // Detener la reproducción al deshabilitar el inspector
         StopPreviewClip();
         Selection.selectionChanged -= OnSelectionChanged;
     }
@@ -56,7 +51,6 @@ public class AudioAlchemistEditor : Editor
         serializedObject.Update();
         var audioAlchemist = (AudioAlchemist)target;
 
-        // Dibujar el header en la parte superior
         if (headerImage != null)
         {
             EditorGUILayout.BeginHorizontal();
@@ -69,15 +63,13 @@ public class AudioAlchemistEditor : Editor
         }
 
 
-        EditorGUILayout.Space();
-        // Dibujar el campo destroyOnLoad
+         EditorGUILayout.Space(); // Space
+        
         EditorGUILayout.PropertyField(destroyOnLoadProperty, new GUIContent("Destroy On Load"));
 
-        // Campo de búsqueda
         EditorGUILayout.Space();
         searchQuery = EditorGUILayout.TextField("Search Sounds", searchQuery);
 
-        // Slider de volumen global y botón en la misma línea
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Global Volume Control", GUILayout.Width(130));
         globalVolume = EditorGUILayout.Slider(globalVolume, 0f, 1f);
@@ -87,23 +79,19 @@ public class AudioAlchemistEditor : Editor
         }
         EditorGUILayout.EndHorizontal();
 
-        // Mini reproductor global sin barra de longitud, solo botón Stop y formato de tiempo
         EditorGUILayout.Space();
-        GUI.backgroundColor = new Color(1f, 0.9f, 0.6f); // Color amarillo tenue
+        GUI.backgroundColor = new Color(1f, 0.9f, 0.6f);
         EditorGUILayout.BeginVertical("box");
 
-        // Mostrar "Now Playing: <nombre del clip>" y el nombre del grupo en la misma línea
         string nowPlayingText = string.IsNullOrEmpty(currentClipName) ? "No sound currently playing." : $"Now Playing: \"{currentClipName}\" (Group: {currentGroupName})";
         EditorGUILayout.LabelField(nowPlayingText, EditorStyles.boldLabel);
 
-        // Botón de Stop y formato de tiempo sin la barra de longitud
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("Stop ■", GUILayout.Width(70)))
         {
             StopPreviewClip();
         }
 
-        // Mostrar el tiempo transcurrido y la duración total en formato 00:00 - 03:00 al lado del botón Stop
         if (previewAudioSource != null && previewAudioSource.clip != null)
         {
             var elapsedTime = FormatTime(previewAudioSource.time);
@@ -114,7 +102,6 @@ public class AudioAlchemistEditor : Editor
         EditorGUILayout.EndVertical();
         GUI.backgroundColor = Color.white;
 
-        // Actualizar tamaño de los foldouts y los volúmenes si cambió el array
         if (foldouts.Length != soundSubjectsProperty.arraySize)
         {
             Array.Resize(ref foldouts, soundSubjectsProperty.arraySize);
@@ -122,28 +109,23 @@ public class AudioAlchemistEditor : Editor
             Array.Resize(ref groupVolumes, soundSubjectsProperty.arraySize);
         }
 
-        // Dibujar cada grupo de sonidos con opciones expandibles
         for (int i = 0; i < soundSubjectsProperty.arraySize; i++)
         {
             var soundSubjectProperty = soundSubjectsProperty.GetArrayElementAtIndex(i);
             var groupName = soundSubjectProperty.FindPropertyRelative("groupName");
             var soundsArray = soundSubjectProperty.FindPropertyRelative("sounds");
 
-            // Inicializar el array de foldouts para cada sonido en el grupo
             if (soundFoldouts[i] == null || soundFoldouts[i].Length != soundsArray.arraySize)
             {
                 soundFoldouts[i] = new bool[soundsArray.arraySize];
             }
 
-            // Caja para el grupo de sonidos y colapsable en color azul
             GUI.backgroundColor = new Color(0.6f, 0.8f, 1f); // Color azul
             EditorGUILayout.BeginVertical("box");
 
-            // Sound Group título y botón Remove Sound Group en la misma línea
             EditorGUILayout.BeginHorizontal();
             foldouts[i] = EditorGUILayout.Foldout(foldouts[i], $"Sound Group: {groupName.stringValue}");
 
-            // Botón Remove Sound Group estilo
             var removeGroupButtonStyle = new GUIStyle(GUI.skin.button)
             {
                 fontStyle = FontStyle.Bold,
@@ -152,7 +134,6 @@ public class AudioAlchemistEditor : Editor
                 hover = { textColor = Color.white, background = Texture2D.grayTexture }
             };
 
-            // Botón Remove Group con una "X" y tooltip
             if (GUILayout.Button(new GUIContent("✖", "Remove Sound Group"), removeGroupButtonStyle, GUILayout.Width(30)))
             {
                 soundSubjectsProperty.DeleteArrayElementAtIndex(i);
@@ -167,7 +148,6 @@ public class AudioAlchemistEditor : Editor
             {
                 EditorGUILayout.PropertyField(groupName, new GUIContent("Group Name"));
 
-                // Control de volumen por grupo en una línea
                 EditorGUILayout.BeginHorizontal();
                 groupVolumes[i] = EditorGUILayout.Slider("Group Volume", groupVolumes[i], 0f, 1f);
                 if (GUILayout.Button("Apply Group Volume", GUILayout.Width(150)))
@@ -176,16 +156,14 @@ public class AudioAlchemistEditor : Editor
                 }
                 EditorGUILayout.EndHorizontal();
 
-                // Dibujar cada sonido dentro del grupo que coincide con el criterio de búsqueda
                 for (int j = 0; j < soundsArray.arraySize; j++)
                 {
                     var soundProperty = soundsArray.GetArrayElementAtIndex(j);
                     var clipName = soundProperty.FindPropertyRelative("clipName");
 
-                    // Verificar si el sonido coincide con el criterio de búsqueda
                     if (!string.IsNullOrEmpty(searchQuery) && !clipName.stringValue.ToLower().Contains(searchQuery.ToLower()))
                     {
-                        continue; // Saltar sonidos que no coinciden
+                        continue; 
                     }
 
                     var clip = soundProperty.FindPropertyRelative("clip");
@@ -196,9 +174,8 @@ public class AudioAlchemistEditor : Editor
                     var fadeOut = soundProperty.FindPropertyRelative("fadeOut");
                     var fadeDuration = soundProperty.FindPropertyRelative("fadeDuration");
 
-                    // Colapsador para cada sonido con fondo rojo tenue
                     soundFoldouts[i][j] = EditorGUILayout.Foldout(soundFoldouts[i][j], $"Sound: {clipName.stringValue}");
-                    GUI.backgroundColor = new Color(1f, 0.6f, 0.6f); // Color rojo tenue
+                    GUI.backgroundColor = new Color(1f, 0.6f, 0.6f); 
 
                     if (soundFoldouts[i][j])
                     {
@@ -212,7 +189,6 @@ public class AudioAlchemistEditor : Editor
                         EditorGUILayout.PropertyField(fadeOut, new GUIContent("Fade Out"));
                         EditorGUILayout.PropertyField(fadeDuration, new GUIContent("Fade Duration"));
 
-                        // Crear estilos para los botones con fondo visible y hover
                         var playButtonStyle = new GUIStyle(GUI.skin.button)
                         {
                             fontStyle = FontStyle.Bold,
@@ -235,7 +211,6 @@ public class AudioAlchemistEditor : Editor
                             hover = { textColor = Color.red, background = Texture2D.blackTexture }
                         };
 
-                        // Controles de Play, Stop y Remove con estilo
                         EditorGUILayout.BeginHorizontal();
                         GUILayout.FlexibleSpace();
                         
@@ -265,8 +240,7 @@ public class AudioAlchemistEditor : Editor
                     GUI.backgroundColor = Color.white; // Reset color
                 }
 
-                // Caja para el botón + centrado y en negrita
-                GUI.backgroundColor = new Color(0.8f, 0.6f, 1f); // Color morado tenue
+                GUI.backgroundColor = new Color(0.8f, 0.6f, 1f);
                 EditorGUILayout.BeginVertical("box");
 
                 var addButtonStyle = new GUIStyle(GUI.skin.button)
@@ -285,7 +259,6 @@ public class AudioAlchemistEditor : Editor
                     soundsArray.arraySize++;
                     var newSound = soundsArray.GetArrayElementAtIndex(soundsArray.arraySize - 1);
 
-                    // Inicializar el nuevo sonido con valores predeterminados y expandido
                     newSound.FindPropertyRelative("clipName").stringValue = string.Empty;
                     newSound.FindPropertyRelative("clip").objectReferenceValue = null;
                     newSound.FindPropertyRelative("volume").floatValue = 0.5f;
@@ -311,19 +284,16 @@ public class AudioAlchemistEditor : Editor
             EditorGUILayout.Space();
         }
 
-        // Configurar el color de fondo para el botón "++" en verde tenue
-        GUI.backgroundColor = new Color(0.6f, 1f, 0.6f); // Fondo verde tenue
-
-        // Crear el estilo del botón para aplicar el hover y otros ajustes
+        GUI.backgroundColor = new Color(0.6f, 1f, 0.6f); 
+        
         var addGroupButtonStyle = new GUIStyle(GUI.skin.button)
         {
             alignment = TextAnchor.MiddleCenter,
             fontStyle = FontStyle.Bold,
             fontSize = 14,
-            fixedHeight = 40 // Asegurar que el botón ocupe todo el alto del renglón
+            fixedHeight = 40 
         };
 
-        // Configurar el color de hover en amarillo
         addGroupButtonStyle.normal.textColor = Color.white;
         addGroupButtonStyle.hover.textColor = Color.yellow;
 
@@ -335,7 +305,6 @@ public class AudioAlchemistEditor : Editor
             soundSubjectsProperty.arraySize++;
             var newGroup = soundSubjectsProperty.GetArrayElementAtIndex(newGroupIndex);
 
-            // Inicializar el nuevo grupo de sonidos vacío
             newGroup.FindPropertyRelative("groupName").stringValue = "";
             newGroup.FindPropertyRelative("sounds").arraySize = 0;
 
@@ -348,7 +317,6 @@ public class AudioAlchemistEditor : Editor
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
-        // Resetear color de fondo a blanco
         GUI.backgroundColor = Color.white;
 
         serializedObject.ApplyModifiedProperties();
@@ -369,8 +337,8 @@ public class AudioAlchemistEditor : Editor
             previewAudioSource.loop = sound.loop;
             previewAudioSource.Play();
 
-            currentClipName = sound.clip.name; // Actualizar el nombre del clip en reproducción
-            currentGroupName = groupName; // Actualizar el nombre del grupo
+            currentClipName = sound.clip.name; 
+            currentGroupName = groupName; 
         }
     }
 
@@ -382,8 +350,8 @@ public class AudioAlchemistEditor : Editor
             DestroyImmediate(previewAudioSource.gameObject);
             previewAudioSource = null;
         }
-        currentClipName = ""; // Limpiar el nombre del clip actual en reproducción
-        currentGroupName = ""; // Limpiar el nombre del grupo actual
+        currentClipName = ""; 
+        currentGroupName = ""; 
     }
 
     void ApplyGlobalVolume(AudioAlchemist audioAlchemist)
@@ -415,7 +383,6 @@ public class AudioAlchemistEditor : Editor
 
     void OnSelectionChanged()
     {
-        // Detener la reproducción al cambiar de GameObject
         StopPreviewClip();
     }
 
